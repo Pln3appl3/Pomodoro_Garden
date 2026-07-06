@@ -4,6 +4,7 @@
     box-sizing: border-box;
 }
 
+/* Set the canvas to fill the entire viewport */
 .box {
     width: 100vw;
     height: 100vh;
