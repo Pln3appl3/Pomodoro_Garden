@@ -4,12 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomodoro Garden</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="CSS/Components.css">
+    <link rel="stylesheet" href="CSS/layout.css">
+    <link rel="stylesheet" href="CSS/design-token.css">
+    <link rel="stylesheet" href="CSS/base.css">
 
 </head>
 <body>
-    <canvas id="PomodoroCanvas" class="box" height="400" width="400" style="border: 1px solid black;"></canvas>
+    <header>
+        <h1>Pomodoro Garden</h1>
+    </header>
+
+    <main>
+        <div class="scene"> <!-- holds the entire canvas and HUD together -->
+            <canvas id="PomodoroCanvas" class="PomodoroCanvas"></canvas>
+
+            <div class="hud">
+                <output class="timer-display">
+                    <span id="minutes">25</span>:<span id="seconds">00</span>
+                </output>
+                <div class="timer-controls">
+                    <button id="timerStartButton" onclick="drawBranches(c.width / 2, c.height / 2 * 0.8, 120, -Math.PI / 2, 9, 9)">Start</button>
+                    <button id="timerPauseButton" hidden>Pause</button>
+                    <button id="timerResetButton" hidden>Reset</button>
+                </div>
+                <div class="stats">
+                    <div class="stat"><span id="pomodoros">0</span> Pomodoros</div>
+                    <div class="stat"><span id="breaks">0</span> Breaks</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <aside class="settings" hidden>
+        <h2>Settings</h2>
+        <label for="workDuration">Work Duration (minutes):</label>
+        <input type="number" id="workDuration" value="25" min="1" max="120">
+        <label for="breakDuration">Break Duration (minutes):</label>
+        <input type="number" id="breakDuration" value="5" min="1" max="30">
+    </aside>
+    
+    <aside class="gallery" hidden>
+        <h2>Gallery</h2>
+        <div class="gallery-images">
+            <!-- Images will be dynamically added here -->
+        </div>
+    </aside>
+
     <script src="script.js"></script>
-    <button id="startButton" onclick="drawBranches(c.width / 2, c.height * 0.8, 120, -Math.PI/2, 9, 9)">Start</button>
 </body>
 </html>
