@@ -3,9 +3,12 @@ var c = document.getElementById("PomodoroCanvas");
 var ctx = c.getContext("2d");
 
 //set canvas size to match the window size
-const size = window.devicePixelRatio;
-c.width = c.clientWidth * size;
-c.height = c.clientHeight * size;
+function setupCanvasSize() {
+    const size = window.devicePixelRatio;
+    c.width = c.clientWidth * size;
+    c.height = c.clientHeight * size;
+    ctx.scale(size, size);
+}
 
 //define colors for the branches and leaves
 const brown = [101, 67, 33];
@@ -54,22 +57,29 @@ function getRandomAngle(min, max) {
     return Math.random() * (max - min) + min;
 }
 
-// Draw the sky as a gradient background
-const gradient = ctx.createLinearGradient(0, 0, c.width, c.height);
-gradient.addColorStop(0, "#0e3e97");
-gradient.addColorStop(0.5, "#90ade4");
-gradient.addColorStop(1, "#1e2ebd");
+function render() {
+    ctx.clearRect(0, 0, c.clientWidth, c.clientHeight);
+    // Draw the sky as a gradient background
+    const gradient = ctx.createLinearGradient(0, 0, c.clientWidth, c.clientHeight);
+    gradient.addColorStop(0, "#0e3e97");
+    gradient.addColorStop(0.5, "#90ade4");
+    gradient.addColorStop(1, "#1e2ebd");
 
-ctx.fillStyle = gradient;
-ctx.fillRect(0, 0, c.width, c.height*0.8);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, c.clientWidth, c.clientHeight * 0.8);
 
-// draw the ground as a solid color
-ctx.fillStyle = "#267430";
-ctx.fillRect(0, c.height*0.8, c.width, c.height*0.2);
+    // draw the ground as a solid color
+    ctx.fillStyle = "#267430";
+    ctx.fillRect(0, c.clientHeight * 0.8, c.clientWidth, c.clientHeight * 0.2);
+    requestAnimationFrame(render);
+
+    drawBranches(c.clientWidth / 2, 5 * c.clientHeight / 6, 100, -Math.PI / 2, 9, 9);
+}
+
+setupCanvasSize();
+render();
 
 // Redraws the branches when the window is resized
 window.addEventListener("resize", function () {
-    c.width = c.clientWidth * size;
-    c.height = c.clientHeight * size;
-    drawBranches(c.width / 2, c.height, 100, -Math.PI / 2, 9, 9);
+    setupCanvasSize();
 });
