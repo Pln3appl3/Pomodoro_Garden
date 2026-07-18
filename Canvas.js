@@ -14,34 +14,46 @@ function setupCanvasSize() {
 const brown = [101, 67, 33];
 const green = [38, 116, 48];
 
+// prebuild a tree to store and rebuild from over time
+function buildTree(angle, currentDepth, maxDepth) {
+    if (currentDepth <= 0) return null;
+
+    const minAngle = 10 * (Math.PI / 180);
+    const maxAngle = 30 * (Math.PI / 180);
+    const leftAngle = angle - getRandomAngle(minAngle, maxAngle);
+    const rightAngle = angle + getRandomAngle(minAngle, maxAngle);
+
+    return {
+        angle: angle,
+        left: buildTree(leftAngle, currentDepth - 1, maxDepth),
+        right: buildTree(rightAngle, currentDepth - 1, maxDepth)
+    };
+}
+
 //draw the branches recursively
-function drawBranches(startX, startY, length, angle, depth, maxDepth) {
-    if (depth <= 0) {
-        return;
+function drawBranches(node, startX, startY, length, currentDepth, maxDepth, unlockedDepth, partialGrowth) {
+    if (!node || currentDepth < maxDepth - unlockedDepth) return;
+
+    let drawLength = length;
+    if (currentDepth === maxDepth - unlockedDepth) {
+        drawLength = length * partialGrowth;
     }
 
     // Calculate the end point of the branch
-    const endBranchX = startX + length * Math.cos(angle);
-    const endBranchY = startY + length * Math.sin(angle);
-    const factor = 1-(depth/maxDepth);
+    const endBranchX = startX + drawLength * Math.cos(node.angle);
+    const endBranchY = startY + drawLength * Math.sin(node.angle);
+    const factor = 1-(currentDepth/maxDepth);
 
     // Draw the branch
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.lineTo(endBranchX, endBranchY);
-    ctx.lineWidth = depth * 1.5;
+    ctx.lineWidth = currentDepth * 4;
     ctx.strokeStyle = getInterpolatedColor(brown, green, factor);
     ctx.stroke();
 
-    // Calculate the angles for the left and right branches
-    const minangle = 10 * (Math.PI / 180);
-    const maxangle = 30 * (Math.PI / 180);
-
-    // Recursively draw the left and right branches
-    const leftangle = angle - getRandomAngle(minangle, maxangle);
-    const rightangle = angle + getRandomAngle(minangle, maxangle);
-    drawBranches(endBranchX, endBranchY, length * 0.7, leftangle, depth - 1, maxDepth);
-    drawBranches(endBranchX, endBranchY, length * 0.7, rightangle, depth - 1, maxDepth);
+    drawBranches(node.left, endBranchX, endBranchY, length * 0.7, currentDepth - 1, maxDepth, unlockedDepth, partialGrowth);
+    drawBranches(node.right, endBranchX, endBranchY, length * 0.7, currentDepth - 1, maxDepth, unlockedDepth, partialGrowth);
 }
 
 // Interpolate between two colors based on a factor (0 to 1)
@@ -71,11 +83,19 @@ function render() {
     // draw the ground as a solid color
     ctx.fillStyle = "#267430";
     ctx.fillRect(0, c.clientHeight * 0.8, c.clientWidth, c.clientHeight * 0.2);
-    requestAnimationFrame(render);
 
-    drawBranches(c.clientWidth / 2, 5 * c.clientHeight / 6, 100, -Math.PI / 2, 9, 9);
+    const totalSeconds = 25 * 60; // Assuming a 25-minute Pomodoro timer
+    const maxDepth = 9;
+    const growthProgress = 1-(secondsRemaining / totalSeconds);
+    const scaledProgress = growthProgress * maxDepth;
+    const unlockedDepth = Math.floor(scaledProgress);
+    const partialGrowth = scaledProgress - unlockedDepth;
+
+    drawBranches(treeShape, c.clientWidth / 2, 5 * c.clientHeight / 6, 200, 9, 9, unlockedDepth, partialGrowth);
+    requestAnimationFrame(render);
 }
 
+const treeShape = buildTree(-Math.PI / 2, 9, 9);
 setupCanvasSize();
 render();
 
