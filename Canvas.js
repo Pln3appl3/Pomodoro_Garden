@@ -96,8 +96,9 @@ function buildGrass(bladeCount) {
     return blades;
 }
 
+
 function drawGrass(x, y, height, timeOffset) {
-    const swayAmount = Math.sin(Date.now() / 300 + timeOffset) * 10;
+    const swayAmount = Math.sin(Date.now() / 300 + timeOffset) * 2;
     const tipx = x + swayAmount;
     const tipy = y - height;
 
@@ -170,16 +171,58 @@ function getRandomAngle(min, max) {
     return Math.random() * (max - min) + min;
 }
 
-function render() {
-    ctx.clearRect(0, 0, c.clientWidth, c.clientHeight);
-    // Draw the sky as a gradient background
+function drawSky(){
     const gradient = ctx.createLinearGradient(0, 0, c.clientWidth, c.clientHeight);
-    gradient.addColorStop(0, "#0e3e97");
-    gradient.addColorStop(0.5, "#90ade4");
-    gradient.addColorStop(1, "#1e2ebd");
+    
+    if (currentWeather && currentWeather.isNight) {
+        gradient.addColorStop(0, "#0b0c2a");
+        gradient.addColorStop(0.5, "#1d1d4e");
+        gradient.addColorStop(1, "#0b0c2a");
+    } else {
+        gradient.addColorStop(0, "#0e3e97");
+        gradient.addColorStop(0.5, "#90ade4");
+        gradient.addColorStop(1, "#1e2ebd");
+    }
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, c.clientWidth, c.clientHeight * 0.8);
+}
+
+function buildRainDrops(count) {
+    const drops = [];
+    for (let i = 0; i < count; i++) {
+        drops.push({
+            x: Math.random() * c.clientWidth,
+            y: Math.random() * c.clientHeight * 0.8,
+            speed: Math.random() * 2 + 2
+        })
+    }
+    return drops;
+}
+
+function drawRain(drops) {
+    ctx.strokeStyle = "rgba(174,194,224,0.5)";
+    ctx.lineWidth = 1;
+
+    for (const drop of drops) {
+        ctx.beginPath();
+        ctx.moveTo(drop.x, drop.y);
+        ctx.lineTo(drop.x, drop.y + 10);
+        ctx.stroke();
+
+        drop.y += drop.speed;
+
+        if (drop.y > c.clientHeight * 0.8) {
+            drop.y = 0;
+            drop.x = Math.random() * c.clientWidth;
+        }
+    }
+}
+
+function render() {
+    ctx.clearRect(0, 0, c.clientWidth, c.clientHeight);
+    // Draw the sky as a gradient background
+    drawSky();
 
     // draw the ground as a solid color
     ctx.fillStyle = "#267430";
@@ -192,12 +235,17 @@ function render() {
     const unlockedDepth = Math.floor(scaledProgress);
     const partialGrowth = scaledProgress - unlockedDepth;
 
+    if (currentWeather && currentWeather.condition === "Rain") {
+        drawRain(rainDrops);
+    }
+
     drawFlowers(flowers, growthProgress);
     drawAllGrass(grassBlades);
     drawBranches(treeShape, c.clientWidth / 2, 5 * c.clientHeight / 6, 200, 9, 9, unlockedDepth, partialGrowth);
     requestAnimationFrame(render);
 }
 
+const rainDrops = buildRainDrops(150);
 const treeShape = buildTree(-Math.PI / 2, 9, 9);
 const grassBlades = buildGrass(50);
 const flowers = buildFlowers(15);
