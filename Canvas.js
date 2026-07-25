@@ -2,6 +2,10 @@
 var c = document.getElementById("PomodoroCanvas");
 var ctx = c.getContext("2d");
 
+
+let hiddenAt = null;
+let wiltAmount = 0;
+
 //set canvas size to match the window size
 function setupCanvasSize() {
     const size = window.devicePixelRatio;
@@ -11,6 +15,7 @@ function setupCanvasSize() {
 }
 
 //define colors for the branches and leaves
+const wiltedColor = [90, 75, 60];
 const brown = [101, 67, 33];
 const green = [38, 116, 48];
 
@@ -133,7 +138,7 @@ function buildTree(angle, currentDepth, maxDepth) {
 }
 
 //draw the branches recursively
-function drawBranches(node, startX, startY, length, currentDepth, maxDepth, unlockedDepth, partialGrowth) {
+function drawBranches(node, startX, startY, length, currentDepth, maxDepth, unlockedDepth, partialGrowth, wiltAmount) {
     if (!node || currentDepth < maxDepth - unlockedDepth) return;
 
     let drawLength = length;
@@ -141,21 +146,24 @@ function drawBranches(node, startX, startY, length, currentDepth, maxDepth, unlo
         drawLength = length * partialGrowth;
     }
 
+    const outerness = 1 - (currentDepth / maxDepth);
+    const droopedAngle = node.angle + (wiltAmount * outerness * 0.8);
+
     // Calculate the end point of the branch
-    const endBranchX = startX + drawLength * Math.cos(node.angle);
-    const endBranchY = startY + drawLength * Math.sin(node.angle);
-    const factor = 1-(currentDepth/maxDepth);
+    const endBranchX = startX + drawLength * Math.cos(droopedAngle);
+    const endBranchY = startY + drawLength * Math.sin(droopedAngle);
+    const Healthyfactor = 1-(currentDepth/maxDepth);
 
     // Draw the branch
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.lineTo(endBranchX, endBranchY);
     ctx.lineWidth = currentDepth * 4;
-    ctx.strokeStyle = getInterpolatedColor(brown, green, factor);
+    ctx.strokeStyle = getWiltedColor(Healthyfactor, wiltAmount);
     ctx.stroke();
 
-    drawBranches(node.left, endBranchX, endBranchY, length * 0.7, currentDepth - 1, maxDepth, unlockedDepth, partialGrowth);
-    drawBranches(node.right, endBranchX, endBranchY, length * 0.7, currentDepth - 1, maxDepth, unlockedDepth, partialGrowth);
+    drawBranches(node.left, endBranchX, endBranchY, length * 0.7, currentDepth - 1, maxDepth, unlockedDepth, partialGrowth, wiltAmount);
+    drawBranches(node.right, endBranchX, endBranchY, length * 0.7, currentDepth - 1, maxDepth, unlockedDepth, partialGrowth, wiltAmount);
 }
 
 // Interpolate between two colors based on a factor (0 to 1)
@@ -164,6 +172,19 @@ function getInterpolatedColor(color1, color2, factor) {
     const g = Math.round(color1[1] + (color2[1] - color1[1]) * factor);
     const b = Math.round(color1[2] + (color2[2] - color1[2]) * factor);
     return `rgb(${r}, ${g}, ${b})`;
+}
+
+function getInterpolatedColorRGB(color1, color2, factor) {
+    const r = Math.round(color1[0] + (color2[0] - color1[0]) * factor);
+    const g = Math.round(color1[1] + (color2[1] - color1[1]) * factor);
+    const b = Math.round(color1[2] + (color2[2] - color1[2]) * factor);
+    return [r, g, b];
+}
+
+function getWiltedColor(Healthyfactor, wiltAmount) {
+    const baseColor = getInterpolatedColorRGB(brown, green, Healthyfactor);
+    return getInterpolatedColor(baseColor, wiltedColor, wiltAmount);
+
 }
 
 // Generate a random angle between min and max
@@ -239,9 +260,16 @@ function render() {
         drawRain(rainDrops);
     }
 
+    if (wiltAmount > 0) {
+        wiltAmount -= 0.001;
+        if (wiltAmount < 0) {
+            wiltAmount = 0;
+        }
+    }
+
     drawFlowers(flowers, growthProgress);
     drawAllGrass(grassBlades);
-    drawBranches(treeShape, c.clientWidth / 2, 5 * c.clientHeight / 6, 200, 9, 9, unlockedDepth, partialGrowth);
+    drawBranches(treeShape, c.clientWidth / 2, 5 * c.clientHeight / 6, 200, 9, 9, unlockedDepth, partialGrowth, wiltAmount);
     requestAnimationFrame(render);
 }
 
@@ -251,6 +279,21 @@ const grassBlades = buildGrass(50);
 const flowers = buildFlowers(15);
 setupCanvasSize();
 render();
+
+document.addEventListener("visibilitychange", () => {
+    if (currentState !== states.GROWING) return;
+
+    if (document.hidden) {
+        hiddenAt = Date.now();
+    } else {
+        if (hiddenAt !== null) {
+            const hiddenDuration = Date.now() - hiddenAt;
+            const wiltThreshold = 15000; // Example threshold of 15 seconds
+            wiltAmount = Math.min(hiddenDuration / wiltThreshold, 1);
+            hiddenAt = null;
+        }
+    }
+});
 
 // Redraws the branches when the window is resized
 window.addEventListener("resize", function () {
