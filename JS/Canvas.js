@@ -256,7 +256,7 @@ function render() {
         const totalSeconds = Number(document.getElementById('workDuration').value) * 60; // Assuming a 25-minute Pomodoro timer
         growthProgress = 1-(secondsRemaining / totalSeconds);
     }
-    
+
     const scaledProgress = growthProgress * maxDepth;
     const unlockedDepth = Math.floor(scaledProgress);
     const partialGrowth = scaledProgress - unlockedDepth;

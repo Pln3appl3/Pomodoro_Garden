@@ -27,3 +27,11 @@ function toggleSettings() {
     const settingsPanel = document.querySelector('.settings');
     settingsPanel.hidden = !settingsPanel.hidden;
 }
+
+function saveApiKey() {
+    const key = document.getElementById('apiKey').value;
+    if (key) {
+        localStorage.setItem('weatherApiKey', key);
+        updateWeather();
+    }
+}
