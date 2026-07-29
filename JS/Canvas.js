@@ -2,7 +2,6 @@
 var c = document.getElementById("PomodoroCanvas");
 var ctx = c.getContext("2d");
 
-
 let hiddenAt = null;
 let wiltAmount = 0;
 
@@ -240,6 +239,8 @@ function drawRain(drops) {
     }
 }
 
+let growthProgress = 0;
+
 function render() {
     ctx.clearRect(0, 0, c.clientWidth, c.clientHeight);
     // Draw the sky as a gradient background
@@ -249,9 +250,13 @@ function render() {
     ctx.fillStyle = "#267430";
     ctx.fillRect(0, c.clientHeight * 0.8, c.clientWidth, c.clientHeight * 0.2);
 
-    const totalSeconds = 25 * 60; // Assuming a 25-minute Pomodoro timer
     const maxDepth = 9;
-    const growthProgress = 1-(secondsRemaining / totalSeconds);
+
+    if (currentState === states.GROWING) {
+        const totalSeconds = Number(document.getElementById('workDuration').value) * 60; // Assuming a 25-minute Pomodoro timer
+        growthProgress = 1-(secondsRemaining / totalSeconds);
+    }
+    
     const scaledProgress = growthProgress * maxDepth;
     const unlockedDepth = Math.floor(scaledProgress);
     const partialGrowth = scaledProgress - unlockedDepth;

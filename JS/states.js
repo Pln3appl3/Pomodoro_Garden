@@ -3,7 +3,8 @@ const states = {
     IDLE: 'idle',
     GROWING: 'growing',
     PAUSED: 'paused',
-    COMPLETED: 'completed'
+    COMPLETED: 'completed',
+    BREAK: 'break'
 };
 
 let currentState = states.IDLE;
