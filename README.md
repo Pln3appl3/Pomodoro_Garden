@@ -1,2 +1,2 @@
 # Pomodoro_Garden
-Pomodoro that slowly grows a garden with a tree in the middle over time, and if you move to another tab or pause the timer during non-break times, the tree starts to wilt until you come back and resume. You can save these pomodoros in an archive to see all your past gardens, and all the gardens will be randomly generated.
+Pomdoro Garden is a pomdoro focus website where a procedural fractal tree is grown on an html canvas in sync with your timer, and reacts with real weather via the OpenWeatherMap API, and wilts if you switch tabs mid-session.
